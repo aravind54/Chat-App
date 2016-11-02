@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+<script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+<script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.1.1.min.js"></script>
+</head>
+<body>
+<form>
+	<input type="text" id="m" oninput ="typing()">
+	<button id="ss">Message</button>
+</form>
+<h5 id="type"></h5>
+<ul id="messages"></ul>
+<script>
+	// if(typeof(Storage)!=="undefined")
+	// {
+	// 	document.getElementById('ss').innerHTML="Enter User name"	
+	// }
+  var socket = io();
+  var x=0;
+   $('form').submit(function(){
+   	document.getElementById('type').innerHTML="";
+    socket.emit('chat message', $('#m').val());
+    $('#m').val('');
+    return false;
+  });
+  socket.on('chat message', function(msg){
+  	document.getElementById('type').innerHTML="";
+  	x=0;
+    $('#messages').append($('<li>').text(msg));
+  });
+  socket.on('typing',function(msg){
+  	x=x+1;
+  	if (x==1) 
+  	 $('#type').append(msg);
+
+  });
+  function typing(){
+  	socket.emit('typing',"User is typng");
+  }
+  // function getusername(){
+  // 	if($("#m").val()!==""){
+  // 		localStorage.setItem("username",$("#m").val());
+  // 		document.getElementById('ss').innerHTML="Send message";
+  // 		var aa=$("#m").val();
+  // 		console.log(aa);
+  // 		$.post('/username',{"name":aa});
+  // 	}
+
+  // }
+</script>
+
+</script>
+</body>
+</html>
