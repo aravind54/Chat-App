@@ -8,17 +8,23 @@
 <body>
 <form>
 	<input type="text" id="m" oninput ="typing()">
-	<button id="ss">Message</button>
+	<button id="ss" onclick="getusername()">Enter User name</button>
 </form>
+<% if(userdetails!==""){ %>
+<ul>
+<% for(var i=0; i<userdetails.length; i++) {%>
+   <li><%= userdetails[i].name %></li>
+<% } %>
+</ul>
+<%}%>
 <h5 id="type"></h5>
+<h5 id="username"></h5>
 <ul id="messages"></ul>
+<ul id="connectedusers"></ul>
+<a href="/connectedusers"><button onclick="showconnectedusers()">users</button></a>
 <script>
-	if(typeof(Storage)!=="undefined")
-	{
-		document.getElementById('ss').innerHTML="Enter User name"	
-	}
   var socket = io();
-  var x=0;
+  var x=0,y=0;
    $('form').submit(function(){
    	document.getElementById('type').innerHTML="";
    	if ($('#m').val()!== "") {
@@ -30,7 +36,10 @@
   socket.on('chat message', function(msg){
   	document.getElementById('type').innerHTML="";
   	x=0;
-    $('#messages').append($('<li>').text(msg));
+  	y=y+1;
+  	console.log(document.getElementById('ss').innerHTML);
+  	if(y>1)
+    	$('#messages').append($('<li>').text(msg));
   });
   socket.on('typing',function(msg){
   	x=x+1;
@@ -42,14 +51,19 @@
   	socket.emit('typing',"User is typng");
   }
   function getusername(){
-  	if($("#m").val()!==""){
+  	if(($("#m").val()!=="")&&(document.getElementById('ss').innerHTML=="Enter User name")){
   		localStorage.setItem("username",$("#m").val());
   		document.getElementById('ss').innerHTML="Send message";
+  		document.getElementById('username').innerHTML=$("#m").val();
   		var aa=$("#m").val();
   		console.log(aa);
   		$.post('/username',{"name":aa});
   	}
 
+  }
+  function showconnectedusers(){
+  	$.get('/connectedusers',function(data){
+  	});
   }
 </script>
 
