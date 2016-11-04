@@ -3,46 +3,103 @@
 <head>
 	<title></title>
 	<script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
-<script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.1.1.min.js"></script>
+  <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.1.1.min.js"></script>
 </head>
 <body>
-<form>
-	<input type="text" id="m" oninput ="typing()">
-	<button id="ss" >Send Message</button>
-</form>
-<h5 id="type"></h5>
-<ul id="messages"></ul>
+  <style>
+    body{
+      overflow-x:hidden; ;
+    }
+    button{
+      font-size: 16px;
+      background-color:#64B5F6;
+      border:none; 
+      text-decoration: none;
+      padding: 15px 32px;
+      color: white;
+      position: static;
+    }
+    #MessageForms {
+      display: none;
+      position: absolute;
+      margin-left: 30%;
+      width: 50vw;
+      height: 85vh;
+      padding-right: 20px;
+      border: 1px solid black;
+      margin-right: 100px;
+    }
+    #messageinput{
+      position: absolute;
+      top: 90vh;
+      width: 100%;
+      margin-left: 40%;
+
+    }
+    #messageinput input{
+      width:250px; 
+      height:25px;
+      position: static;
+    }
+    .
+    #messages{
+      display: none;
+    }
+    #MessageData{
+      float: right;
+      overflow-y: auto;
+      height: 70vh;
+    }
+    ul{
+      list-style-type: none;
+    }
+    #connectedusers  {
+      width: 30%;
+      display: none;
+      text-align: center;
+    }
+    a{
+      text-decoration: none;
+
+    }
+    a:link{
+      color: blue;
+    }
+    a:visited{
+      color: black;
+    }
+    a:hover{
+      color: blue;
+    }
+  </style>
+  <div id="MessageForms">
+    <div id="MessageData"></div>
+  </div>
+    <form id="messageinput">
+      <input type="text" id="typing" oninput="Usertyping()">
+      <button id="sendmessage" onclick="clear()">Send Mesage</button>
+    </form>
+  <div id="connectedusers">
+    <h3>Online Users</h3>
+    <ul id="users"></ul>
+  </div>
+
 <script>
   var socket = io();
-  var x=0,y=0;
-   $('form').submit(function(){
-   	document.getElementById('type').innerHTML="";
-   	if ($('#m').val()!== "") {
-    socket.emit('chat message', $('#m').val());
-}
-    $('#m').val('');
-    return false;
+  $('#sendmessage').click(function (e) {
+    e.preventDefault();
+    if ($('#typing').val()!=="") {
+      socket.emit('message',$('#typing').val());
+    }
+    $('#typing').val("");
   });
-  socket.on('chat message', function(msg){
-  	document.getElementById('type').innerHTML="";
-  	console.log(socket.io.engine.id);
-  	if(y==0)  
-  		$.post('/socketid',{"id":socket.io.engine.id})   
-  	x=0;
-  	y=y+1;
-  	if(y>1)
-    	$('#messages').append($('<li>').text(msg));
+  socket.on('message',function(msg){
+      var html="";
+      html= html+'<b>'+msg.username+":</b>"+msg.msg+"<br/>";
+      console.log(msg);
+      $('#MessageData').append(html);
+      document.getElementById('UserTyping').innerHTML="";
   });
-  socket.on('typing',function(msg){
-
-  	x=x+1;
-  	if (x==1) 
-  	 $('#type').append(msg);
-
-  });
-  function typing(){
-  	socket.emit('typing',"User is typng");
-  }
   
 </script>
 </body>

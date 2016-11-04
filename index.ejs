@@ -7,14 +7,83 @@
 </head>
 <body>
 	<style>
-		#MessageForms{
+		body{
+			overflow-x:hidden; ;
+		}
+		button{
+			font-size: 16px;
+			background-color:#64B5F6;
+			border:none; 
+			text-decoration: none;
+			padding: 15px 32px;
+			color: white;
+			position: static;
+		}
+		#MessageForms {
 			display: none;
+			position: absolute;
+			margin-left: 30%;
+			width: 50vw;
+			height: 85vh;
+			padding-right: 20px;
+			border: 1px solid black;
+			margin-right: 100px;
 		}
-		.users{
-			float: right;
+		#messageinput{
+			position: absolute;
+			top: 90vh;
+			width: 100%;
+			margin-left: 40%;
+
 		}
+		#messageinput input{
+			width:250px; 
+			height:25px;
+			position: static;
+		}
+		.
 		#messages{
 			display: none;
+		}
+		#usernameform{
+			position: absolute;
+			text-align: center;
+			display: block;
+			top: 40%;
+			left: 35%;
+		}
+		#usernameform input{
+			width: 100%;
+			height: 30px;
+		}
+		#usernameform button{
+			margin-top: 20px;
+		}
+		#MessageData{
+			float: right;
+			overflow-y: auto;
+			height: 70vh;
+		}
+		ul{
+			list-style-type: none;
+		}
+		#connectedusers  {
+			width: 30%;
+			display: none;
+			text-align: center;
+		}
+		a{
+			text-decoration: none;
+
+		}
+		a:link{
+			color: blue;
+		}
+		a:visited{
+			color: black;
+		}
+		a:hover{
+			color: blue;
 		}
 	</style>
 	<div id="usernameform">
@@ -24,68 +93,27 @@
 		</form>
 	</div>
 	<div id="MessageForms">
-		<form>
-			<input type="text" id="typing">
-			<button id="sendmessage">Send Mesage</button>
+		<div id="MessageData"></div>
+		</div>
+		<form id="messageinput">
+			<input type="text" id="typing" oninput="Usertyping()">
+			<button id="sendmessage" onclick="clear()">Send Mesage</button>
 		</form>
+	<div id="connectedusers">
+		<h3>Online Users</h3>
+		<ul id="users"></ul>
 	</div>
-	<div id="users"></div>
 	<div id=messages>Wrong User</div>
-	<div id="MessageData"></div>
-<!-- <script>
-  var socket = io.connect();
-  var x=0,y=0;
-  socket.emit('id',socket.io.engine.id);
-   $('form').submit(function(){
-   	console.log(socket.io.engine.id);
-   	document.getElementById('type').innerHTML="";
-   	if ($('#m').val()!== "") {
-    socket.emit('chat message', $('#m').val());
-}
-    $('#m').val('');
-    return false;
-  });
-  socket.on('chat message', function(msg){
-  	document.getElementById('type').innerHTML="";
-  	console.log(socket.io.engine.id);
-  	if(y==0)  
-  	$.post('/socketid',{"id":socket.io.engine.id,name:localStorage.getItem('username')});  
-  	x=0;
-  	y=y+1;
-  	if(y>1)
-    	$('#messages').append($('<li>').text(msg));
-  });
-  socket.on('typing',function(msg){
-
-  	x=x+1;
-  	if (x==1) 
-  	 $('#type').append(msg);
-
-  });
-  function typing(){
-  	socket.emit('typing',"User is typng");
-  }
-  function getusername(){
-  	if(($("#m").val()!=="")&&(document.getElementById('ss').innerHTML=="Enter User name")){
-  		localStorage.setItem("username",$("#m").val());
-  		document.getElementById('ss').innerHTML="Send message";
-  		document.getElementById('username').innerHTML=$("#m").val();
-  		var aa=$("#m").val();
-  	}
-
-  }
-  function showconnectedusers(){
-  	$.get('/connectedusers',function(data){
-  	});
-  }
-</script> -->
+	<div id="UserTyping"></div>
 	<script>
 		var usern="";
+		$('#messages').hide();
+		$('#messageinput').hide();
+		$('#connectedusers').hide();
 		var socket = io.connect();
 		$('#sendmessage').click(function(e){
 			console.log("B");
 			e.preventDefault();
-			console.log("messqage");
 			if ($('#typing').val()!=="") {
 				console.log("messaged");
 				socket.emit('chat message',$('#typing').val());
@@ -99,29 +127,48 @@
 					if (data) {
 						$('#usernameform').hide();
 						$('#MessageForms').show();
-						usern=$('#user').val();
+						$('#messageinput').show();
+						$('#connectedusers').show();
 					}
 					else{
 						$('#messages').show();
 					}
 				});
 			}
-			$('#user').val()="";
 		});
 		socket.on('chat message',function(msg){
 			var html="";
 			html= html+'<b>'+msg.username+":</b>"+msg.msg+"<br/>";
 			console.log(msg);
 			$('#MessageData').append(html);
+			document.getElementById('UserTyping').innerHTML="";
+
+
 		});
 		socket.on('usernames',function(data){
 			var html="";
 			for (var i = 0; i < data.length; i++) {
-				html=html+data[i]+"<br/>";
+
+				html=html+"<li><a href=#>"+data[i]+"</a><li>";
 			}
 			$('#users').html(html);
-
 		});
+		socket.on('typing',function(data){
+			$('#UserTyping').html(data);
+		});
+		$('#users').on('click','li',function(){
+			console.log("clicked");
+			console.log($(this).text());
+			$.get('/'+$(this).text(),function(){});
+		});
+		function Usertyping(){
+			$('#UserTyping').show();
+			socket.emit('typing',"User is typing");
+		}
+		function clear(){
+			console.log("clear");
+			$('#UserTyping').hide();
+		}
 	</script>
 </script>
 </body>

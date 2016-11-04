@@ -71,6 +71,14 @@ app.get('/', function(req, res){
 //   });
 // });
 
+
+app.get('/:username',function(req,res){
+  console.log("called");
+  console.log(req.params.username);
+  to=req.params.username;
+  res.render('../messages.ejs');
+});
+
 io.sockets.on('connection', function(socket){
    // console.log(to);
    //  users.find({name:to},function(err,user){
@@ -95,7 +103,7 @@ io.sockets.on('connection', function(socket){
     io.sockets.emit('chat message',{msg:msg,username:socket.usernames});
   });
   socket.on('typing',function(msg){
-    socket.broadcast.emit('typing',"user is typing");
+    socket.broadcast.emit('typing', socket.usernames+"is typing");
   });
   socket.on('username',function(data,callback){
     if (usernames.indexOf(data)!=-1) {
@@ -107,6 +115,9 @@ io.sockets.on('connection', function(socket){
       usernames.push(socket.usernames);
       io.sockets.emit('usernames',usernames);
     }
+  });
+  socket.on('message',function(data){
+    io.to(to).emit('message',data);
   });
 
 });
