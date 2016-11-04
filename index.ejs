@@ -6,26 +6,38 @@
 <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.1.1.min.js"></script>
 </head>
 <body>
-<form>
-	<input type="text" id="m" oninput ="typing()">
-	<button id="ss" onclick="getusername()">Enter User name</button>
-</form>
-<% if(userdetails!==""){ %>
-<ul>
-<% for(var i=0; i<userdetails.length; i++) {%>
-   <li><%= userdetails[i].name %></li>
-<% } %>
-</ul>
-<%}%>
-<h5 id="type"></h5>
-<h5 id="username"></h5>
-<ul id="messages"></ul>
-<ul id="connectedusers"></ul>
-<a href="/connectedusers"><button onclick="showconnectedusers()">users</button></a>
-<script>
-  var socket = io();
+	<style>
+		#MessageForms{
+			display: none;
+		}
+		.users{
+			float: right;
+		}
+		#messages{
+			display: none;
+		}
+	</style>
+	<div id="usernameform">
+		<form>
+			<input type="text" id="user">
+			<button id=sendusername>Enter User Name</button>
+		</form>
+	</div>
+	<div id="MessageForms">
+		<form>
+			<input type="text" id="typing">
+			<button id="sendmessage">Send Mesage</button>
+		</form>
+	</div>
+	<div id="users"></div>
+	<div id=messages>Wrong User</div>
+	<div id="MessageData"></div>
+<!-- <script>
+  var socket = io.connect();
   var x=0,y=0;
+  socket.emit('id',socket.io.engine.id);
    $('form').submit(function(){
+   	console.log(socket.io.engine.id);
    	document.getElementById('type').innerHTML="";
    	if ($('#m').val()!== "") {
     socket.emit('chat message', $('#m').val());
@@ -35,13 +47,16 @@
   });
   socket.on('chat message', function(msg){
   	document.getElementById('type').innerHTML="";
+  	console.log(socket.io.engine.id);
+  	if(y==0)  
+  	$.post('/socketid',{"id":socket.io.engine.id,name:localStorage.getItem('username')});  
   	x=0;
   	y=y+1;
-  	console.log(document.getElementById('ss').innerHTML);
   	if(y>1)
     	$('#messages').append($('<li>').text(msg));
   });
   socket.on('typing',function(msg){
+
   	x=x+1;
   	if (x==1) 
   	 $('#type').append(msg);
@@ -56,8 +71,6 @@
   		document.getElementById('ss').innerHTML="Send message";
   		document.getElementById('username').innerHTML=$("#m").val();
   		var aa=$("#m").val();
-  		console.log(aa);
-  		$.post('/username',{"name":aa});
   	}
 
   }
@@ -65,8 +78,51 @@
   	$.get('/connectedusers',function(data){
   	});
   }
-</script>
+</script> -->
+	<script>
+		var usern="";
+		var socket = io.connect();
+		$('#sendmessage').click(function(e){
+			console.log("B");
+			e.preventDefault();
+			console.log("messqage");
+			if ($('#typing').val()!=="") {
+				console.log("messaged");
+				socket.emit('chat message',$('#typing').val());
+			}
+			$('#typing').val("");
+		});
+		$('#sendusername').click(function (e){
+			e.preventDefault();
+			if ($('#user').val()!=="") {
+				socket.emit('username',$('#user').val(),function(data){
+					if (data) {
+						$('#usernameform').hide();
+						$('#MessageForms').show();
+						usern=$('#user').val();
+					}
+					else{
+						$('#messages').show();
+					}
+				});
+			}
+			$('#user').val()="";
+		});
+		socket.on('chat message',function(msg){
+			var html="";
+			html= html+'<b>'+msg.username+":</b>"+msg.msg+"<br/>";
+			console.log(msg);
+			$('#MessageData').append(html);
+		});
+		socket.on('usernames',function(data){
+			var html="";
+			for (var i = 0; i < data.length; i++) {
+				html=html+data[i]+"<br/>";
+			}
+			$('#users').html(html);
 
+		});
+	</script>
 </script>
 </body>
 </html>

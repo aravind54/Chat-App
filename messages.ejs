@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+<script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.1.1.min.js"></script>
+</head>
+<body>
+<form>
+	<input type="text" id="m" oninput ="typing()">
+	<button id="ss" >Send Message</button>
+</form>
+<h5 id="type"></h5>
+<ul id="messages"></ul>
+<script>
+  var socket = io();
+  var x=0,y=0;
+   $('form').submit(function(){
+   	document.getElementById('type').innerHTML="";
+   	if ($('#m').val()!== "") {
+    socket.emit('chat message', $('#m').val());
+}
+    $('#m').val('');
+    return false;
+  });
+  socket.on('chat message', function(msg){
+  	document.getElementById('type').innerHTML="";
+  	console.log(socket.io.engine.id);
+  	if(y==0)  
+  		$.post('/socketid',{"id":socket.io.engine.id})   
+  	x=0;
+  	y=y+1;
+  	if(y>1)
+    	$('#messages').append($('<li>').text(msg));
+  });
+  socket.on('typing',function(msg){
+
+  	x=x+1;
+  	if (x==1) 
+  	 $('#type').append(msg);
+
+  });
+  function typing(){
+  	socket.emit('typing',"User is typng");
+  }
+  
+</script>
+</body>
+</html>
