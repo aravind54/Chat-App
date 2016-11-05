@@ -6,7 +6,7 @@
 <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
 <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.1.1.min.js"></script>
 </head>
-<body>
+<body onload="checkifprevioususer()">
 	<style>
 		body{
 			overflow-x:hidden;
@@ -177,9 +177,9 @@
 	</div>
 	<script>
 		var usern="",x=0;
-		$('#messages').hide();
-		$('#messageinput').hide();
-		$('#connectedusers').hide();
+		// $('#messages').hide();
+		// $('#messageinput').hide();
+		// $('#connectedusers').hide();
 		var socket = io.connect();
 		$('#sendmessage').click(function(e){
 			e.preventDefault();
@@ -199,6 +199,8 @@
 						$('#messageinput').show();
 						$('#connectedusers').show();
 						$('#users').show();
+						localStorage.setItem('username',$('#user').val());
+						initialload();
 					}
 					else{
 						$('#messages').show();
@@ -216,33 +218,71 @@
 		});
 		socket.on('usernames',function(data){
 			var html="";
-			html=html+"<li><a href=#>"+"EveryUsers"+"</a><li>";
+			var x = "everyone";
+			html=html+"<li><a href="+"/#"+">"+"EveryUsers"+"</a><li>";
 			for (var i = 0; i < data.length; i++) {
 
-				html=html+"<li><a href=#>"+data[i]+"</a><li>";
+				html=html+"<li><a href="+"/#"+">"+data[i]+"</a><li>";
 			}
 			$('#users').html(html);
 		});
 		socket.on('typing',function(data){
 			$('#UserTyping').html(data);
 		});
-		$('#users').on('click','li',function(){
-			$.get('/'+$(this).text(),function(){});
-		});
-		socket.on('notifications',function(data){
 
-			console.log("called"+data[0]);
+
+
+		$('#users').on('click','li',function(){
+			console.log($(this).text());
+			$.post('/'+$(this).text(),function(data){
+				console.log(data);
+			});
+		});
+
+
+		socket.on('notifications',function(data){
 			var code  = "";
 			code = code+"<li>"+data.username+"\t Messaged You"+"</li>";
 			$('#notifications').html(code);
 		});
+
+
 		function Usertyping(){
 			$('#UserTyping').show();
 			socket.emit('typing',"User is typing");
 		}
+
+
 		function clear(){
 			console.log("clear");
 			$('#UserTyping').hide();
+		}
+		function checkifprevioususer(){
+			var x  = localStorage.getItem('username');
+			if(x){
+				$('#usernameform').hide();
+				$('#MessageForms').show();
+				$('#messageinput').show();
+				$('#connectedusers').show();
+				$('#messages').hide();
+				initialload();
+			}
+			else{
+				$('#usernameform').show();
+				$('#messages').hide();
+				$('#messageinput').hide();
+				$('#connectedusers').hide();
+			}
+		}
+		function initialload(){
+			var code = "";
+			$.post('/EveryUser',function(data){
+				console.log(data);
+				for (var i = 0; i < data.length; i++) {
+					code = code + "<b>"+data[i].from+":</b>" + data[i].message+ "<br/>";
+				}
+				$('#MessageData').html(code);
+			});
 		}
 	</script>
 </script>

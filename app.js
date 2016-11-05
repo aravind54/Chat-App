@@ -10,26 +10,26 @@ var date = new Date();
 
 app.set('view engine','ejs');
 
-// mongoose.connect('mongodb://localhost/cht');
-// var db= mongoose.connection;
-// db.on('error', console.error.bind(console, 'connection error:'));
-// db.once('open', function() {
-//   console.log("Database connected");
-// });
+mongoose.connect('mongodb://localhost/cht');
+var db= mongoose.connection;
+db.on('error', console.error.bind(console, 'connection error:'));
+db.once('open', function() {
+  console.log("Database connected");
+});
 
-// var chatschema = mongoose.Schema({
-//   time:String,
-//   from:String,
-//   to:String,
-//   message:String
-// });
+var chatschema = mongoose.Schema({
+  time:{type:Date,default:Date.now()},
+  from:String,
+  to:String,
+  message:String
+});
 
 // var connectedusers = mongoose.Schema({
 //   name:String,
 //   ids:String
 // });
 
-// var chat = mongoose.model('chatdata',chatschema);
+var chat = mongoose.model('chatdata',chatschema);
 // var users = mongoose.model('ConnectedUsers',connectedusers);
 
 
@@ -72,13 +72,24 @@ app.get('/', function(req, res){
 // });
 
 
-app.get('/:username',function(req,res){
-  if (req.params.username=="EveryUsers") {
-    to = " ";
+app.post('/:username',function(req,res){
+  console.log(usernames);
+  if (req.params.username in usernames) {
+    to = req.params.username;
   }
   else{
-    to=req.params.username;
+    to="everyone";
+    console.log(to);
   }
+  chat.find({to:to}).sort({time:'ascending'}).exec(function(err,docs){
+    if (err) {
+      console.log("Error");
+    }
+    else{
+      res.send(docs);
+      console.log(docs);
+    }
+  });
 });
 
 io.sockets.on('connection', function(socket){
@@ -93,22 +104,40 @@ io.sockets.on('connection', function(socket){
    //      //socket.broadcast.to(user[0].ids).emit('chat message',msg);
    //    }
    //  });
-  socket.on('disconnect',function(){
-    if (!socket.usernames)return;
-    delete usernames[socket.usernames];
-    io.sockets.emit('usernames',Object.keys(usernames));
-  });
-  socket.on('id',function(msg){
-  });
+
+
+  // socket.on('disconnect',function(){
+  //   if (!socket.usernames)return;
+  //   delete usernames[socket.usernames];
+  //   io.sockets.emit('usernames',Object.keys(usernames));
+  // });
+ 
   socket.on('chat message', function(msg){
+    console.log(socket.id);
     if (to in usernames) {
       socket.to = to;
-      usernames[socket.to].emit('chat message',{msg:msg,username:socket.usernames});
-      usernames[socket.usernames].emit('chat message',{msg:msg,username:socket.usernames});
+      console.log("socket"+socket.to);
+      var message = new chat({from:socket.usernames,to:socket.to,message:msg});
+      if (to!=socket.usernames) {
+        usernames[socket.to].emit('chat message',{msg:msg,username:socket.usernames});
+        usernames[socket.usernames].emit('chat message',{msg:msg,username:socket.usernames});
+      }
+      else{
+        usernames[socket.to].emit('chat message',{msg:msg,username:socket.usernames});
+      }
     }    
     else{
+      var message = new chat({from:socket.usernames,to:"everyone",message:msg});
       io.sockets.emit('chat message',{msg:msg,username:socket.usernames});
     }
+    message.save(function(err,sucess){
+      if (err) {
+        console.log("Error");
+      }
+      else{
+        console.log("sucess");
+      }
+    });
   });
   socket.on('typing',function(msg){
     socket.broadcast.emit('typing', socket.usernames+"is typing");

@@ -89,16 +89,16 @@
   $('#sendmessage').click(function (e) {
     e.preventDefault();
     if ($('#typing').val()!=="") {
-      socket.emit('message',$('#typing').val());
+      socket.emit('chat message',$('#typing').val());
     }
     $('#typing').val("");
   });
-  socket.on('message',function(msg){
+  socket.on('chat message',function(msg){
       var html="";
       html= html+'<b>'+msg.username+":</b>"+msg.msg+"<br/>";
-      console.log(msg);
+      console.log(msg.username);
       $('#MessageData').append(html);
-      document.getElementById('UserTyping').innerHTML="";
+      document.getElementById('UserTyping').innerHTML=" ";
   });
   
 </script>
