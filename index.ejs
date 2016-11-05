@@ -151,7 +151,7 @@
 	<div id="body" >
 		<div id="usernameform">
 			<form>
-				<input type="text" id="user">
+				<input type="text" id="user" autocomplete="off">
 				<button id=sendusername>Enter User Name</button>
 			</form>
 		</div>
@@ -159,20 +159,24 @@
 			<div id="MessageData"></div>
 			</div>
 			<form id="messageinput">
-				<input type="text" id="typing" oninput="Usertyping()">
+				<input type="text" id="typing" oninput="Usertyping()" autocomplete="off">
 				<button id="sendmessage" onclick="clear()">Send Mesage</button>
 			</form>
 		<div id="connectedusers">
 			<h3>Online Users</h3>
 			<ul id="users">
-			<li><a href="#">EveryUsers</a></li>
+				<li><a href="#">EveryUsers</a></li>
 			</ul>
+			<div id="Notifications">
+				<h3>Notification</h3>
+				<ul id="notifications"></ul>
+			</div>
 		</div>
 		<div id=messages>Wrong User</div>
 		<div id="UserTyping"></div>
 	</div>
 	<script>
-		var usern="";
+		var usern="",x=0;
 		$('#messages').hide();
 		$('#messageinput').hide();
 		$('#connectedusers').hide();
@@ -180,8 +184,8 @@
 		$('#sendmessage').click(function(e){
 			e.preventDefault();
 			if ($('#typing').val()!=="") {
-				console.log("messaged");
 				socket.emit('chat message',$('#typing').val());
+				socket.emit('notifications',$('#typing').val());
 			}
 			$('#typing').val("");
 		});
@@ -224,6 +228,13 @@
 		});
 		$('#users').on('click','li',function(){
 			$.get('/'+$(this).text(),function(){});
+		});
+		socket.on('notifications',function(data){
+
+			console.log("called"+data[0]);
+			var code  = "";
+			code = code+"<li>"+data.username+"\t Messaged You"+"</li>";
+			$('#notifications').html(code);
 		});
 		function Usertyping(){
 			$('#UserTyping').show();

@@ -99,15 +99,12 @@ io.sockets.on('connection', function(socket){
     io.sockets.emit('usernames',Object.keys(usernames));
   });
   socket.on('id',function(msg){
-    console.log(msg);
   });
   socket.on('chat message', function(msg){
-    console.log("socket"+to);
     if (to in usernames) {
-      console.log(to);
       socket.to = to;
-      usernames[socket.to].emit('chat message',{msg:msg,usernames:socket.usernames});
-      usernames[socket.usernames].emit('chat message',{msg:msg,usernames:socket.usernames});
+      usernames[socket.to].emit('chat message',{msg:msg,username:socket.usernames});
+      usernames[socket.usernames].emit('chat message',{msg:msg,username:socket.usernames});
     }    
     else{
       io.sockets.emit('chat message',{msg:msg,username:socket.usernames});
@@ -131,7 +128,16 @@ io.sockets.on('connection', function(socket){
     console.log("called");
     socket.broadcast.to(to).emit('message',data);
   });
-
+  socket.on('notifications',function(data){
+    if (to in usernames) {
+      socket.to = to;
+      usernames[socket.to].emit('notifications',{msg:data,username:socket.usernames});
+      usernames[socket.usernames].emit('notifications',{msg:data,username:socket.usernames});
+    }    
+    else{
+      io.sockets.emit('notifications',{msg:data,username:socket.usernames});
+    }
+  });
 });
   
 http.listen(3000,function(){
