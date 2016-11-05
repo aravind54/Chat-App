@@ -164,7 +164,9 @@
 			</form>
 		<div id="connectedusers">
 			<h3>Online Users</h3>
-			<ul id="users"><li><a href="#">EveryUsers</a></li></ul>
+			<ul id="users">
+			<li><a href="#">EveryUsers</a></li>
+			</ul>
 		</div>
 		<div id=messages>Wrong User</div>
 		<div id="UserTyping"></div>
@@ -192,6 +194,7 @@
 						$('#MessageForms').show();
 						$('#messageinput').show();
 						$('#connectedusers').show();
+						$('#users').show();
 					}
 					else{
 						$('#messages').show();
@@ -209,6 +212,7 @@
 		});
 		socket.on('usernames',function(data){
 			var html="";
+			html=html+"<li><a href=#>"+"EveryUsers"+"</a><li>";
 			for (var i = 0; i < data.length; i++) {
 
 				html=html+"<li><a href=#>"+data[i]+"</a><li>";
