@@ -4,7 +4,7 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var mongoose=require('mongoose');
 
-var from = "",to = "",usernames=[];
+var from = "",to = " ",usernames={};
 var z= 0;
 var date = new Date();
 
@@ -73,10 +73,12 @@ app.get('/', function(req, res){
 
 
 app.get('/:username',function(req,res){
-  console.log("called");
-  console.log(req.params.username);
-  to=req.params.username;
-  res.render('../messages.ejs');
+  if (req.params.username=="EveryUsers") {
+    to = " ";
+  }
+  else{
+    to=req.params.username;
+  }
 });
 
 io.sockets.on('connection', function(socket){
@@ -93,31 +95,41 @@ io.sockets.on('connection', function(socket){
    //  });
   socket.on('disconnect',function(){
     if (!socket.usernames)return;
-    usernames.splice(usernames.indexOf(socket.usernames),1);
-    io.sockets.emit('usernames',usernames);
+    delete usernames[socket.usernames];
+    io.sockets.emit('usernames',Object.keys(usernames));
   });
   socket.on('id',function(msg){
     console.log(msg);
   });
   socket.on('chat message', function(msg){
-    io.sockets.emit('chat message',{msg:msg,username:socket.usernames});
+    console.log("socket"+to);
+    if (to in usernames) {
+      console.log(to);
+      socket.to = to;
+      usernames[socket.to].emit('chat message',{msg:msg,usernames:socket.usernames});
+      usernames[socket.usernames].emit('chat message',{msg:msg,usernames:socket.usernames});
+    }    
+    else{
+      io.sockets.emit('chat message',{msg:msg,username:socket.usernames});
+    }
   });
   socket.on('typing',function(msg){
     socket.broadcast.emit('typing', socket.usernames+"is typing");
   });
   socket.on('username',function(data,callback){
-    if (usernames.indexOf(data)!=-1) {
+    if (data in usernames) {
       callback(false);
     }
     else{
       callback(true);
       socket.usernames=data;
-      usernames.push(socket.usernames);
-      io.sockets.emit('usernames',usernames);
+      usernames[socket.usernames]=socket;
+      io.sockets.emit('usernames',Object.keys(usernames));
     }
   });
   socket.on('message',function(data){
-    io.to(to).emit('message',data);
+    console.log("called");
+    socket.broadcast.to(to).emit('message',data);
   });
 
 });

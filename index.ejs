@@ -2,13 +2,21 @@
 <html>
 <head>
 	<title></title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
 <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.1.1.min.js"></script>
 </head>
 <body>
 	<style>
 		body{
-			overflow-x:hidden; ;
+			overflow-x:hidden;
+			overflow-y: auto;
+			height: 100%;
+			width: 100%; 
+		}
+		#body{
+			display: flex;
+			flex-wrap: wrap;
 		}
 		button{
 			font-size: 16px;
@@ -21,7 +29,7 @@
 		}
 		#MessageForms {
 			display: none;
-			position: absolute;
+			position: relative;
 			margin-left: 30%;
 			width: 50vw;
 			height: 85vh;
@@ -30,10 +38,10 @@
 			margin-right: 100px;
 		}
 		#messageinput{
-			position: absolute;
-			top: 90vh;
+			position: relative;
 			width: 100%;
 			margin-left: 40%;
+			margin-top: 20px;
 
 		}
 		#messageinput input{
@@ -69,8 +77,9 @@
 		}
 		#connectedusers  {
 			width: 30%;
-			display: none;
+			position: absolute;
 			text-align: center;
+			top: 0;
 		}
 		a{
 			text-decoration: none;
@@ -85,26 +94,81 @@
 		a:hover{
 			color: blue;
 		}
+		#users{
+			padding: 0;
+		}
+		@media 	(max-width: 800px){
+			#usernameform{
+				width: 80%;
+				margin: 0;
+				left: 10%;
+			}
+			#usernameform input{
+				height: 40px;
+				font-size: 30px;
+				width: 100%;
+			}
+			#usernameform button{
+				font-size: 20px;
+			}
+			#messageinput{
+				position: relative;
+				left: 0;
+				margin: 0;
+				left: 4%;
+				margin-top: 30px;
+			}
+			#messageinput input{
+				width: 60%;
+				height: 20px;
+				font-size: 30px;
+				margin-top: 5px;
+
+			}
+			#messageinput button{
+				font-size: 10px;
+				padding: 5px 10px;
+				height: 30px;
+			}
+			#MessageForms{
+				margin-right: 0;
+				position: relative;
+				padding-right: 0;
+				width: 90%;
+				left: 3%;
+				margin-left: 0%;
+				height:60vh;	
+			}
+			#connectedusers{
+				width: 100%;
+				position: relative;
+			}
+			#users{
+				padding: 0;
+			}
+		}
 	</style>
-	<div id="usernameform">
-		<form>
-			<input type="text" id="user">
-			<button id=sendusername>Enter User Name</button>
-		</form>
-	</div>
-	<div id="MessageForms">
-		<div id="MessageData"></div>
+	<div id="body" >
+		<div id="usernameform">
+			<form>
+				<input type="text" id="user">
+				<button id=sendusername>Enter User Name</button>
+			</form>
 		</div>
-		<form id="messageinput">
-			<input type="text" id="typing" oninput="Usertyping()">
-			<button id="sendmessage" onclick="clear()">Send Mesage</button>
-		</form>
-	<div id="connectedusers">
-		<h3>Online Users</h3>
-		<ul id="users"></ul>
+		<div id="MessageForms">
+			<div id="MessageData"></div>
+			</div>
+			<form id="messageinput">
+				<input type="text" id="typing" oninput="Usertyping()">
+				<button id="sendmessage" onclick="clear()">Send Mesage</button>
+			</form>
+		<div id="connectedusers">
+			<h3>Online Users</h3>
+			<ul id="users"><li><a href="#">EveryUsers</a></li></ul>
+		</div>
+		<div id=messages>Wrong User</div>
+		<div id="UserTyping"></div>
 	</div>
-	<div id=messages>Wrong User</div>
-	<div id="UserTyping"></div>
 	<script>
 		var usern="";
 		$('#messages').hide();
@@ -112,7 +176,6 @@
 		$('#connectedusers').hide();
 		var socket = io.connect();
 		$('#sendmessage').click(function(e){
-			console.log("B");
 			e.preventDefault();
 			if ($('#typing').val()!=="") {
 				console.log("messaged");
@@ -139,7 +202,6 @@
 		socket.on('chat message',function(msg){
 			var html="";
 			html= html+'<b>'+msg.username+":</b>"+msg.msg+"<br/>";
-			console.log(msg);
 			$('#MessageData').append(html);
 			document.getElementById('UserTyping').innerHTML="";
 
@@ -157,8 +219,6 @@
 			$('#UserTyping').html(data);
 		});
 		$('#users').on('click','li',function(){
-			console.log("clicked");
-			console.log($(this).text());
 			$.get('/'+$(this).text(),function(){});
 		});
 		function Usertyping(){
